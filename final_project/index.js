@@ -16,13 +16,12 @@ app.use(session({
 
 app.use("/customer",session({secret:"fingerprint_customer",resave: true, saveUninitialized: true}))
 
-app.use("/customer/auth/*", function auth(req,res,next){
-//Write the authenication mechanism here
-// --jwt ?
+app.post("/customer/auth", function auth(req, res) {
+  console.log('customer auth MIDDLEWARE');
 
-// session
-const user = req.session.user;
-if (user) {
+  const user = req.session.user;
+  if (user) {
+    // next();
     res.send(`Welcome, ${req.session.user}!`);
   } else {
     res.status(401).send('Unauthorized. Please log in.');

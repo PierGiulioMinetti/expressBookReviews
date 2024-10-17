@@ -3,6 +3,7 @@ let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require("axios");
 
 
 // Route to handle user registration
@@ -31,10 +32,43 @@ public_users.post("/register", (req, res) => {
 	}
   });
 
+//   @GET - original get call for unauthenticated users
 // Get the book list available in the shop
-public_users.get("/", function (req, res) {
-	res.json({ books: books });
-});
+// public_users.get("/", function (req, res) {
+// 	res.json({ books: books });
+// });
+
+public_users.get("/", (req, res) => {
+	const booksData = books;
+	new Promise((resolve, reject) => {
+  
+	  if (booksData) {
+		resolve(booksData);
+	  } else {
+		reject(new Error("Failed to fetch books"));
+	  }
+	})
+	.then((booksData) => {
+	  res.json({ booksData });
+	})
+	.catch((error) => {
+	  console.error("Error fetching books:", error);
+	  res.status(500).json({ error: "Failed to fetch books" });
+	});
+  });
+
+public_users.get("/", async (req, res, next) => {
+	try {
+	  const resp = await axios.get("http://localhost:5000");
+  
+	  // Handle the response data
+	  res.json({ data: resp.data }); // Assuming you want to send the response data
+	} catch (err) {
+	  // Handle errors gracefully
+	  console.error(err);
+	  res.status(500).json({ error: 'An error occurred' });
+	}
+  });
 
 // Get book details based on ISBN
 public_users.get("/isbn/:isbn", function (req, res) {

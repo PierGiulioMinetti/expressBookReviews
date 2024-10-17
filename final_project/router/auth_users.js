@@ -25,6 +25,21 @@ const isValid = (username) => {
 	return isPresent ? false : true;
 };
 
+
+// @POST - localhost:5000/customer/register
+// Route to handle user registration
+regd_users.post("/register", (req, res) => {
+	const username = req.body.username;
+	const password = req.body.password;
+	// -validate user existence already
+	if (isValid(username)) {
+		users.push({username, password})
+		res.status(200).send("New user created");
+	} else {
+		res.status(403).send("Name already exist!");
+	}
+});
+
 const authenticatedUser = (username, password) => {
 	//returns boolean
 	//write code to check if username and password match the one we have in records.
@@ -34,25 +49,11 @@ const authenticatedUser = (username, password) => {
 	return userMatch.length > 0 ? true : false;
 };
 
-// @POST - localhost:5000/customer/register
-// Route to handle user registration
-regd_users.post("/register", (req, res) => {
-	const username = req.body.username;
-	const password = req.body.password;
-	// -validate user existence already
-	if (isValid(username)) {
-    users.push({username, password})
-		res.status(200).send("New user created");
-	} else {
-		res.status(403).send("Name already exist!");
-	}
-});
-
 //only registered users can login
 regd_users.post("/login", (req, res) => {
+	//Write your code here
 	const username = req.body.username;
 	const password = req.body.password;
-
 	// --check if the user exist
 	const isUserAuthorized = authenticatedUser(username, password);
 	console.log('------------------------------------------------------------');
@@ -68,14 +69,71 @@ regd_users.post("/login", (req, res) => {
 	} else {
 		res.status(403).json({ message: "Invalid credentials!" }); // Send token as JSON response
 	}
-
-	//Write your code here
 });
+
+// "reviews": [{author:'', text:''}]
 
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-	//Write your code here
-	return res.status(300).json({ message: "Yet to be implemented" });
+	const isbn = req.params.isbn;
+	const reviewText = req.body.reviewText;
+	const user = req.session.user;
+
+	console.log(isbn, reviewText, user);
+
+	if (user) {
+	  console.log('Authenticated. Proceeding with review.');
+	//   -insert review based on customer name
+	console.log('books BEFORE instert review');
+	insertReviewByISBN(isbn, user, reviewText);
+	console.log('books AFTER insert review');
+	//   -update review based on customer name
+	//   -insert new review based on customer name
+
+	  return res.status(200).json({books});
+	} else {
+	  return res.status(401).send('Unauthorized. Please log in.');
+	}
+  });
+
+  function insertReviewByISBN(isbn, author, text) {
+	const book = Object.values(books).find(book => book.ISBN === isbn);
+	if (book) {
+	  const existingReview = book.reviews.find(review => review.author === author);
+	  if (existingReview) {
+		// Update existing review
+		existingReview.text = text;
+	} else {
+		// Create new review
+		const newReview = { author, text };
+		book.reviews.push(newReview);
+	  }
+	} else {
+	  console.error(`Book with ISBN ${isbn} not found.`);
+	}
+}
+
+  function deleteReviewByISBN(isbn, author) {
+	const book = Object.values(books).find(book => book.ISBN === isbn);
+	if (book) {
+		 book.reviews = book.reviews.filter(review => review.author !== author);
+		return book;
+	} else {
+	  console.error(`Book with ISBN ${isbn} not found.`);
+	}
+}
+
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+	const isbn = req.params.isbn;
+	const user = req.session.user;
+
+	if(user){
+		const filteredBooks = deleteReviewByISBN(isbn, user)
+		res.status(200).json({filteredBooks});
+	} else {
+		res.status(401).json({error: 'Login first! User not authorized!'});
+	}
+
 });
 
 module.exports.authenticated = regd_users;
