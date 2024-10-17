@@ -34,27 +34,21 @@ public_users.post("/register", (req, res) => {
 
 //   @GET - original get call for unauthenticated users
 // Get the book list available in the shop
-// public_users.get("/", function (req, res) {
-// 	res.json({ books: books });
-// });
+public_users.get("/", function (req, res) {
+	res.json({ books: books });
+});
 
-public_users.get("/", (req, res) => {
-	const booksData = books;
-	new Promise((resolve, reject) => {
-  
-	  if (booksData) {
-		resolve(booksData);
-	  } else {
-		reject(new Error("Failed to fetch books"));
-	  }
-	})
-	.then((booksData) => {
-	  res.json({ booksData });
-	})
-	.catch((error) => {
+public_users.get("/", async (req, res) => {
+	try {
+	  // Making an HTTP GET request to the external endpoint
+	  const response = await axios.get("http://localhost:5000/");
+	  
+	  const booksData = response.data; 
+	  res.json({ books: booksData });
+	} catch (error) {
 	  console.error("Error fetching books:", error);
 	  res.status(500).json({ error: "Failed to fetch books" });
-	});
+	}
   });
 
 // Get book details based on ISBN
@@ -71,26 +65,31 @@ public_users.get("/", (req, res) => {
 // 	}
 // });
 
-public_users.get("/isbn/:isbn", (req, res) => {
+public_users.get("/isbn/:isbn", async (req, res) => {
 	const isbn = req.params.isbn;
   
-	new Promise((resolve, reject) => {
-	  const filteredBooks = filterBooksByProperty(isbn, 'ISBN');
+	try {
+	  // Making an HTTP GET request to fetch all books
+	  const response = await axios.get("http://localhost:5000/");
+	  const allBooks = response.data; 
   
-	  if (filteredBooks) {
-		resolve(filteredBooks);
+	  // Convert the object to an array and filter by ISBN
+	  const books = Object.values(allBooks);
+	  const booksArray = books[0];
+	  const filteredBooks = Object.values(booksArray).filter(book => book.ISBN === isbn);
+	  
+	  if (filteredBooks.length > 0) {
+		res.status(200).json(filteredBooks);
 	  } else {
-		reject(new Error("No books found!"));
+		res.status(404).json({ books: "No books found!" });
 	  }
-	})
-	.then((filteredBooks) => {
-	  res.status(200).json(filteredBooks);
-	})
-	.catch((error) => {
+	} catch (error) {
 	  console.error("Error fetching books:", error);
-	  res.status(404).json({ error: "No books found!" });
-	});
+	  res.status(500).json({ error: "Failed to fetch books" });
+	}
   });
+
+
 
 // Get book details based on author
 // public_users.get("/author/:author", function (req, res) {
@@ -106,25 +105,26 @@ public_users.get("/isbn/:isbn", (req, res) => {
 // 	}
 // });
 
-public_users.get("/author/:author", (req, res) => {
+public_users.get("/author/:author", async (req, res) => {
 	const author = req.params.author;
   
-	new Promise((resolve, reject) => {
-	  const filteredBooks = filterBooksByProperty(author, 'author');
-  
-	  if (filteredBooks) {
-		resolve(filteredBooks);
+	try {
+	  // Making an HTTP GET request to fetch books and then filter
+	  const response = await axios.get(`http://localhost:5000/`);
+	  const allBooks = response.data;
+	    // Convert the object to an array and filter by ISBN
+		const books = Object.values(allBooks);
+		const booksArray = books[0];
+		const filteredBooks = Object.values(booksArray).filter(book => book.author === author);
+	  if (filteredBooks.length > 0) {
+		res.status(200).json(filteredBooks);
 	  } else {
-		reject(new Error("No books found!"));
+		res.status(404).json({ books: "No books found!" });
 	  }
-	})
-	.then((filteredBooks) => {
-	  res.status(200).json(filteredBooks);
-	})
-	.catch((error) => {
+	} catch (error) {
 	  console.error("Error fetching books:", error);
-	  res.status(404).json({ error: "No books found!" });
-	});
+	  res.status(500).json({ error: "Failed to fetch books" });
+	}
   });
 
 // Get all books based on title
@@ -140,25 +140,26 @@ public_users.get("/author/:author", (req, res) => {
 // 	}
 // });
 
-public_users.get("/title/:title", (req, res) => {
+  public_users.get("/title/:title", async (req, res) => {
 	const title = req.params.title;
   
-	new Promise((resolve, reject) => {
-	  const filteredBooks = filterBooksByProperty(title, 'title');
-  
-	  if (filteredBooks) {
-		resolve(filteredBooks);
+	try {
+	  // Making an HTTP GET request to fetch books and then filter
+	  const response = await axios.get(`http://localhost:5000/`);
+	  const allBooks = response.data;
+	    // Convert the object to an array and filter by ISBN
+		const books = Object.values(allBooks);
+		const booksArray = books[0];
+		const filteredBooks = Object.values(booksArray).filter(book => book.title === title);
+	  if (filteredBooks.length > 0) {
+		res.status(200).json(filteredBooks);
 	  } else {
-		reject(new Error("No books found!"));
+		res.status(404).json({ books: "No books found!" });
 	  }
-	})
-	.then((filteredBooks) => {
-	  res.status(200).json(filteredBooks);
-	})
-	.catch((error) => {
+	} catch (error) {
 	  console.error("Error fetching books:", error);
-	  res.status(404).json({ error: "No books found!" });
-	});
+	  res.status(500).json({ error: "Failed to fetch books" });
+	}
   });
 
 //  Get book review
@@ -177,6 +178,10 @@ public_users.get("/review/:isbn", function (req, res) {
 
 function filterBooksByProperty(value, property) {
 	return Object.values(books).filter((book) => book[property] === value);
+}
+
+function filterBooksByPropertyDataSet(dataset, value, property) {
+	return Object.values(dataset).filter((book) => book[property] === value);
 }
 
 module.exports.general = public_users;
