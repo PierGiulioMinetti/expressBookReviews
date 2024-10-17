@@ -57,59 +57,109 @@ public_users.get("/", (req, res) => {
 	});
   });
 
-public_users.get("/", async (req, res, next) => {
-	try {
-	  const resp = await axios.get("http://localhost:5000");
+// Get book details based on ISBN
+// public_users.get("/isbn/:isbn", function (req, res) {
+// 	const isbn = req.params.isbn;
+// 	let filteredBooks;
+
+// 	filteredBooks = filterBooksByProperty(isbn, 'ISBN');
+// 	console.log(filteredBooks);
+// 	if (filteredBooks) {
+// 		res.status(200).json(filteredBooks);
+// 	} else {
+// 		res.status(404).json({ books: "No books found!" });
+// 	}
+// });
+
+public_users.get("/isbn/:isbn", (req, res) => {
+	const isbn = req.params.isbn;
   
-	  // Handle the response data
-	  res.json({ data: resp.data }); // Assuming you want to send the response data
-	} catch (err) {
-	  // Handle errors gracefully
-	  console.error(err);
-	  res.status(500).json({ error: 'An error occurred' });
-	}
+	new Promise((resolve, reject) => {
+	  const filteredBooks = filterBooksByProperty(isbn, 'ISBN');
+  
+	  if (filteredBooks) {
+		resolve(filteredBooks);
+	  } else {
+		reject(new Error("No books found!"));
+	  }
+	})
+	.then((filteredBooks) => {
+	  res.status(200).json(filteredBooks);
+	})
+	.catch((error) => {
+	  console.error("Error fetching books:", error);
+	  res.status(404).json({ error: "No books found!" });
+	});
   });
 
-// Get book details based on ISBN
-public_users.get("/isbn/:isbn", function (req, res) {
-	const isbn = req.params.isbn;
-	let filteredBooks;
-
-	filteredBooks = filterBooksByProperty(isbn, 'ISBN');
-	console.log(filteredBooks);
-	if (filteredBooks) {
-		res.status(200).json(filteredBooks);
-	} else {
-		res.status(404).json({ books: "No books found!" });
-	}
-});
-
 // Get book details based on author
-public_users.get("/author/:author", function (req, res) {
-	const author = req.params.author;
-	let filteredBooks;
+// public_users.get("/author/:author", function (req, res) {
+// 	const author = req.params.author;
+// 	let filteredBooks;
 
-	filteredBooks = filterBooksByProperty(author, 'author');
-	console.log(filteredBooks);
-	if (filteredBooks) {
-		res.status(200).json(filteredBooks);
-	} else {
-		res.status(404).json({ books: "No books found!" });
-	}
-});
+// 	filteredBooks = filterBooksByProperty(author, 'author');
+// 	console.log(filteredBooks);
+// 	if (filteredBooks) {
+// 		res.status(200).json(filteredBooks);
+// 	} else {
+// 		res.status(404).json({ books: "No books found!" });
+// 	}
+// });
+
+public_users.get("/author/:author", (req, res) => {
+	const author = req.params.author;
+  
+	new Promise((resolve, reject) => {
+	  const filteredBooks = filterBooksByProperty(author, 'author');
+  
+	  if (filteredBooks) {
+		resolve(filteredBooks);
+	  } else {
+		reject(new Error("No books found!"));
+	  }
+	})
+	.then((filteredBooks) => {
+	  res.status(200).json(filteredBooks);
+	})
+	.catch((error) => {
+	  console.error("Error fetching books:", error);
+	  res.status(404).json({ error: "No books found!" });
+	});
+  });
 
 // Get all books based on title
-public_users.get("/title/:title", function (req, res) {
-  const title = req.params.title;
-	let filteredBooks;
+// public_users.get("/title/:title", function (req, res) {
+//   const title = req.params.title;
+// 	let filteredBooks;
 
-	filteredBooks = filterBooksByProperty(title, 'title');
-  if (filteredBooks) {
-		res.status(200).json(filteredBooks);
-	} else {
-		res.status(404).json({ books: "No books found!" });
-	}
-});
+// 	filteredBooks = filterBooksByProperty(title, 'title');
+//   if (filteredBooks) {
+// 		res.status(200).json(filteredBooks);
+// 	} else {
+// 		res.status(404).json({ books: "No books found!" });
+// 	}
+// });
+
+public_users.get("/title/:title", (req, res) => {
+	const title = req.params.title;
+  
+	new Promise((resolve, reject) => {
+	  const filteredBooks = filterBooksByProperty(title, 'title');
+  
+	  if (filteredBooks) {
+		resolve(filteredBooks);
+	  } else {
+		reject(new Error("No books found!"));
+	  }
+	})
+	.then((filteredBooks) => {
+	  res.status(200).json(filteredBooks);
+	})
+	.catch((error) => {
+	  console.error("Error fetching books:", error);
+	  res.status(404).json({ error: "No books found!" });
+	});
+  });
 
 //  Get book review
 public_users.get("/review/:isbn", function (req, res) {
