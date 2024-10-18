@@ -8,14 +8,6 @@ const session = require('express-session')
 const secretKey = "your-secret-key"; // Replace with a strong secret key
 
 let users = [
-	// {
-	// 	username: "Giulio",
-	// 	password: 1234,
-	// },
-	// {
-	// 	username: "Luigi",
-	// 	password: 5678,
-	// },
 ];
 
 const isValid = (username) => {
@@ -33,8 +25,8 @@ regd_users.post("/register", (req, res) => {
 	const password = req.body.password;
 	// -validate user existence already
 	if (isValid(username)) {
-		users.push({username, password})
-		res.status(200).send("New user created");
+		users.push({username, password});
+		res.status(200).json({message: "You have been succesfully registered!",users});
 	} else {
 		res.status(403).send("Name already exist!");
 	}
@@ -56,9 +48,6 @@ regd_users.post("/login", (req, res) => {
 	const password = req.body.password;
 	// --check if the user exist
 	const isUserAuthorized = authenticatedUser(username, password);
-	console.log('------------------------------------------------------------');
-	console.log(users);
-	console.log('------------------------------------------------------------');
 
 	if (isUserAuthorized) {
 		// create JWT
