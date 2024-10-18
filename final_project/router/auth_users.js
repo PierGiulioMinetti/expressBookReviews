@@ -60,32 +60,7 @@ regd_users.post("/login", (req, res) => {
 	}
 });
 
-// "reviews": [{author:'', text:''}]
-
-// Add a book review
-regd_users.put("/auth/review/:isbn", (req, res) => {
-	const isbn = req.params.isbn;
-	const reviewText = req.body.reviewText;
-	const user = req.session.user;
-
-	console.log(isbn, reviewText, user);
-
-	if (user) {
-	  console.log('Authenticated. Proceeding with review.');
-	//   -insert review based on customer name
-	console.log('books BEFORE instert review');
-	insertReviewByISBN(isbn, user, reviewText);
-	console.log('books AFTER insert review');
-	//   -update review based on customer name
-	//   -insert new review based on customer name
-
-	  return res.status(200).json({books});
-	} else {
-	  return res.status(401).send('Unauthorized. Please log in.');
-	}
-  });
-
-  function insertReviewByISBN(isbn, author, text) {
+function insertReviewByISBN(isbn, author, text) {
 	const book = Object.values(books).find(book => book.ISBN === isbn);
 	if (book) {
 	  const existingReview = book.reviews.find(review => review.author === author);
@@ -101,6 +76,30 @@ regd_users.put("/auth/review/:isbn", (req, res) => {
 	  console.error(`Book with ISBN ${isbn} not found.`);
 	}
 }
+
+// Add a book review
+regd_users.put("/auth/review/:isbn", (req, res) => {
+	const isbn = req.params.isbn;
+	const reviewText = req.body.reviewText;
+	const user = req.session.user;
+
+	console.log(isbn, reviewText, user);
+
+	if (user) {
+	  console.log('Authenticated. Proceeding with review.');
+	//   -insert review based on customer name
+	insertReviewByISBN(isbn, user, reviewText);
+	console.log('books AFTER insert review');
+	//   -update review based on customer name
+	//   -insert new review based on customer name
+
+	  return res.status(200).json({books});
+	} else {
+	  return res.status(401).send('Unauthorized. Please log in.');
+	}
+  });
+
+
 
   function deleteReviewByISBN(isbn, author) {
 	const book = Object.values(books).find(book => book.ISBN === isbn);
@@ -118,7 +117,7 @@ regd_users.delete("/auth/review/:isbn", (req, res) => {
 
 	if(user){
 		const filteredBooks = deleteReviewByISBN(isbn, user)
-		res.status(200).json({filteredBooks});
+		res.status(200).json({message: "Review succesfully deleted!", filteredBooks});
 	} else {
 		res.status(401).json({error: 'Login first! User not authorized!'});
 	}
